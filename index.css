@@ -21,13 +21,18 @@
 
 .chat-box {
   width: 340px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 150px);
   background: #ffffff;
   border-radius: 24px;
   border: 1px solid #e5e5e5;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   display: none;
   flex-direction: column;
-  overflow: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overflow-x: hidden;
   margin-bottom: 10px;
   transform: translateY(40px);
   font-family: "Poppins", sans-serif;
@@ -375,7 +380,9 @@
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 648px;
+  height: calc(100vh - 250px);
+  max-height: 648px;
+  min-height: 200px;
   position: relative;
 }
 
@@ -914,7 +921,7 @@
   font-size: 15px;
   font-weight: 700;
   margin: 0;
-  color: #1f2937; 
+  color: #1f2937;
 }
 
 .survey-header p {
@@ -974,13 +981,13 @@
   margin-bottom: 2px;
 }
 
-  .field label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #4b5563;
-    margin: 4px 0;
-  }
+.field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+  margin: 4px 0;
+}
 
 .input,
 .textarea {
@@ -1246,7 +1253,7 @@
   margin-bottom: 8px;
   max-width: 60%;
   align-self: flex-start;
-
+      min-width: fit-content;
   word-wrap: break-word;
   overflow-wrap: break-word;
 
@@ -1273,7 +1280,7 @@
   margin-bottom: 8px;
   max-width: 70%;
   align-self: flex-end;
-
+      min-width: fit-content;
   word-wrap: break-word;
   overflow-wrap: break-word;
 
@@ -1326,6 +1333,7 @@
 .message-content {
   display: flex;
   flex-direction: column;
+  max-width: 70%;
 }
 
 /* Sender name above bubble */
