@@ -79,6 +79,13 @@ if (!localStorage.getItem("conversationId")) {
       renderWidget(widgetConfig);
       renderForm(widgetConfig?.surveyForm?.surveyFormFields);
       renderFaqCards(widgetConfig?.widgetText?.conversationStarters);
+
+      renderOperatingHours(widgetConfig.operatingHours);
+      console.log("operatingHours received:", widgetConfig.operatingHours);
+      console.log(
+        "isOperatingHoursEnabled:",
+        widgetConfig.operatingHours?.isOperatingHoursEnabled,
+      );
     })
     .catch((err) => {
       console.error("Widget config fetch error:", err);
@@ -262,6 +269,106 @@ function loadCSS() {
 }
 
 /* APPLY STYLES */
+// function renderOperatingHours(operatingHours) {
+//   const chatWrapper = document.getElementsByClassName("chat-wrapper")?.[0];
+//   if (!chatWrapper) return;
+//   if (!operatingHours?.isOperatingHoursEnabled) {
+//     chatWrapper.style.display = "none";
+//     return;
+//   }
+//   console.log("chatWrapper element:", chatWrapper);
+
+//   const days = [
+//     "sunday",
+//     "monday",
+//     "tuesday",
+//     "wednesday",
+//     "thursday",
+//     "friday",
+//     "saturday",
+//   ];
+//   const now = new Date();
+//   const todayKey = days[now.getDay()];
+//   const todayConfig = operatingHours?.configOperatingHours?.[todayKey];
+
+//   if (!todayConfig || todayConfig.status !== 1) {
+//     chatWrapper.style.display = "none";
+//     return;
+//   }
+
+//   const [startHour, startMin] = (
+//     todayConfig.starttime ||
+//     todayConfig.startTime ||
+//     ""
+//   )
+//     .split(":")
+//     .map(Number);
+//   const [endHour, endMin] = (todayConfig.endTime || "").split(":").map(Number);
+
+//   if (isNaN(startHour) || isNaN(endHour)) {
+//     chatWrapper.style.display = "none";
+//     return;
+//   }
+
+//   const nowMinutes = now.getHours() * 60 + now.getMinutes();
+//   const startMinutes = startHour * 60 + startMin;
+//   const endMinutes = endHour * 60 + endMin;
+
+//   const isWithinHours = nowMinutes >= startMinutes && nowMinutes < endMinutes;
+//   chatWrapper.style.display = isWithinHours ? "block" : "none";
+// }
+function renderOperatingHours(operatingHours) {
+  const chatWrapper = document.getElementsByClassName("chat-input")?.[0];
+  const noAgent = document.getElementsByClassName("noagent")?.[0];
+  if (!chatWrapper) return;
+  if (!operatingHours?.isOperatingHoursEnabled) {
+    chatWrapper.style.display = "none";
+    noAgent.style.display = "flex";
+    return;
+  }
+  console.log("chatWrapper element:", chatWrapper);
+
+  const days = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const now = new Date();
+  const todayKey = days[now.getDay()];
+  const todayConfig = operatingHours?.configOperatingHours?.[todayKey];
+
+  if (!todayConfig || todayConfig.status !== 1) {
+    chatWrapper.style.display = "none";
+    return;
+  }
+
+  const [startHour, startMin] = (
+    todayConfig.starttime ||
+    todayConfig.startTime ||
+    ""
+  )
+    .split(":")
+    .map(Number);
+  const [endHour, endMin] = (todayConfig.endTime || "").split(":").map(Number);
+
+  if (isNaN(startHour) || isNaN(endHour)) {
+    chatWrapper.style.display = "none";
+    noAgent.style.display = "flex";
+    return;
+  }
+
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = startHour * 60 + startMin;
+  const endMinutes = endHour * 60 + endMin;
+
+  const isWithinHours = nowMinutes >= startMinutes && nowMinutes < endMinutes;
+  chatWrapper.style.display = isWithinHours ? "flex" : "none";
+  noAgent.style.display = isWithinHours ? "none" : "flex";
+}
 
 function applyStyles(config) {
   document.documentElement.style.setProperty(
@@ -834,6 +941,12 @@ function chatScreenHTML(config) {
     <button onclick="sendMessage()"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-send"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"></path><path d="m21.854 2.147-10.94 10.939"></path></svg></button>
 
   </div>
+  <div class="noagent">
+  <div class="noagent__icon">🕐</div>
+  <p class="noagent__title">We're currently offline</p>
+  <p class="noagent__subtitle">Our team is unavailable right now.<br>Please check back during office hours.</p>
+  <span class="noagent__badge">Office Hours Off</span>
+</div>
 
 
   ${

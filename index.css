@@ -935,12 +935,10 @@
   flex: 1;
   max-height: 500px;
   overflow-y: auto;
-  padding: 0 30px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 15px;
   margin: 0;
-
-  /* Firefox */
-  scrollbar-width: thin;
-  scrollbar-color: #9ca3af transparent;
 }
 
 /* Width */
@@ -978,7 +976,8 @@
 }
 
 .field {
-  margin-bottom: 2px;
+  margin-bottom: 10px;
+  width: 100%;
 }
 
 .field label {
@@ -991,8 +990,8 @@
 
 .input,
 .textarea {
-  width: 100%;
-  padding: 10px;
+  width: 96%;
+  padding: 6px;
   border-radius: 12px;
   border: 1px solid #d1d5db;
   outline: none;
@@ -1006,6 +1005,7 @@
 
 .textarea {
   resize: none;
+  height: 70px;
 }
 
 /* .radio-group {
@@ -1038,7 +1038,8 @@
   border-radius: 10px;
   font-weight: 600;
   cursor: pointer;
-  margin: 20px 0;
+  /* margin: 20px 0; */
+  margin-bottom: 20px;
 }
 
 .submit-btn:hover {
@@ -1090,8 +1091,8 @@
 
 /* input */
 .form-option input {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   accent-color: #2563eb;
   cursor: pointer;
 }
@@ -1253,7 +1254,7 @@
   margin-bottom: 8px;
   max-width: 60%;
   align-self: flex-start;
-      min-width: fit-content;
+  min-width: fit-content;
   word-wrap: break-word;
   overflow-wrap: break-word;
 
@@ -1280,7 +1281,7 @@
   margin-bottom: 8px;
   max-width: 70%;
   align-self: flex-end;
-      min-width: fit-content;
+  min-width: fit-content;
   word-wrap: break-word;
   overflow-wrap: break-word;
 
@@ -1480,4 +1481,54 @@
   .chat-box {
     width: 290px;
   }
+}
+
+.noagent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 32px 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+  z-index: 999;
+}
+
+.noagent__icon {
+  width: 56px;
+  height: 56px;
+  background: #fff4e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.noagent__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.noagent__subtitle {
+  font-size: 13px;
+  color: #888;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.noagent__badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #fff0e0;
+  color: #e07b00;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
 }
