@@ -139,83 +139,72 @@ async function createConversationId() {
 }
 
 let currentPage = 1;
+let oldestMsgDate = null;
+let newestMsgDate = null;
 
-function getAllMessages(page = 1, append = false) {
+async function fetchChatMessages(pageNo = 1, type = "initial") {
   let storedConversationId = localStorage.getItem("conversationId");
-
   if (!storedConversationId) return;
 
-  fetchWithWidget(
-    `/conversation/messages/${storedConversationId}?page=${page}&limit=10`,
-  )
-    .then((data) => {
-      const newMessages = data?.data.messages || [];
-      const btn = document.getElementById("load-previous");
+  try {
+    const chatType = type === "initial" || type === "newer" ? "new" : "old";
+    const timestamp =
+      type === "older"
+        ? oldestMsgDate || ""
+        : type === "newer"
+          ? newestMsgDate || ""
+          : "";
 
-      if (append) {
-        window.chatMessages = [...newMessages, ...(window.chatMessages || [])];
-      } else {
-        window.chatMessages = newMessages;
+    const url = `/conversation/messages/${storedConversationId}?afterUpdatedAt=${encodeURIComponent(timestamp)}&limit=10&page=${pageNo}&chat=${chatType}`;
+
+    const response = await fetchWithWidget(url);
+    if (!response?.success) return;
+
+    const fetchedMsgs = response.data?.messages || [];
+    const btn = document.getElementById("load-previous");
+
+    if (fetchedMsgs.length > 0) {
+      const chronologicalMsgs = [...fetchedMsgs].reverse();
+
+      if (type === "initial") {
+        newestMsgDate = fetchedMsgs[0].updatedAt;
+        oldestMsgDate = fetchedMsgs[fetchedMsgs.length - 1].updatedAt;
+        window.chatMessages = chronologicalMsgs;
+      } else if (type === "older") {
+        oldestMsgDate = fetchedMsgs[fetchedMsgs.length - 1].updatedAt;
+        window.chatMessages = [
+          ...chronologicalMsgs,
+          ...(window.chatMessages || []),
+        ];
+      } else if (type === "newer") {
+        newestMsgDate = fetchedMsgs[0].updatedAt;
+        const existingIds = new Set(
+          (window.chatMessages || []).map((m) => m.id),
+        );
+        const newFiltered = chronologicalMsgs.filter(
+          (m) => !existingIds.has(m.id),
+        );
+        window.chatMessages = [...(window.chatMessages || []), ...newFiltered];
       }
+    } else if (type === "initial") {
+      window.chatMessages = [];
+    }
 
-      if (btn) {
-        if (newMessages.length === 10) {
-          btn.style.display = "block";
-        } else {
-          btn.style.display = "none";
-        }
-      }
+    currentPage = pageNo;
 
-      renderChatMessagesUI();
-    })
-    .catch((err) => {
-      console.error("Message fetch error:", err);
-    });
-}
+    if (btn) {
+      btn.style.display = response.data?.hasNextPage ? "block" : "none";
+    }
 
-function getAllSyncMessages(append = false, afterUpdatedAt = null) {
-  let storedConversationId = localStorage.getItem("conversationId");
-
-  if (!storedConversationId) return;
-
-  // fetchWithWidget(
-  //   `/conversation/messages/${storedConversationId}/sync?afterUpdatedAt=${encodeURIComponent(afterUpdatedAt)}&limit=10&page=1`,
-  // )
-  fetchWithWidget(
-    `/conversation/messages/${storedConversationId}/sync?afterUpdatedAt=${encodeURIComponent(afterUpdatedAt)}&limit=10`,
-  )
-    .then((data) => {
-      const newMessages = data?.data.messages || [];
-
-      if (append) {
-        window.chatMessages = [...newMessages, ...(window.chatMessages || [])];
-      } else {
-        window.chatMessages = newMessages;
-      }
-
-      renderChatMessagesUI();
-    })
-    .catch((err) => {
-      console.error("Message fetch error:", err);
-    });
-}
-
-function getLatestUpdatedAt() {
-  const messages = window.chatMessages || [];
-  if (!messages.length) return null;
-
-  return messages.reduce((latest, msg) => {
-    return !latest || new Date(msg.updatedAt) > new Date(latest)
-      ? msg.updatedAt
-      : latest;
-  }, null);
+    renderChatMessagesUI();
+  } catch (err) {
+    console.error("Message fetch error:", err);
+  }
 }
 
 setInterval(() => {
-  const afterUpdatedAt = getLatestUpdatedAt();
-
-  if (afterUpdatedAt) {
-    getAllSyncMessages(true, afterUpdatedAt);
+  if (newestMsgDate && localStorage.getItem("conversationId")) {
+    fetchChatMessages(1, "newer");
   }
 }, 1000);
 
@@ -247,8 +236,11 @@ async function sendActiveMessage(data) {
     }
 
     console.log("Message sent:", result);
-
-    await getAllMessages();
+    if (newestMsgDate) {
+      await fetchChatMessages(1, "newer");
+    } else {
+      await fetchChatMessages(1, "initial");
+    }
 
     return result;
   } catch (err) {
@@ -2776,11 +2768,13 @@ function loadScreens(config) {
   document.getElementById("survey-screen").innerHTML = surveyScreenHTML(config);
 }
 
+// function loadPreviousMessages() {
+//   currentPage += 1;
+//   getAllMessages(currentPage, true);
+// }
 function loadPreviousMessages() {
-  currentPage += 1;
-  getAllMessages(currentPage, true);
+  fetchChatMessages(currentPage + 1, "older");
 }
-
 async function sendMessage(customMessage = null) {
   const input = document.getElementById("chat-input");
   const message = customMessage || input.value.trim();
@@ -3025,9 +3019,9 @@ function scrollToBottom() {
 }
 
 function renderChatMessages() {
-  getAllMessages();
+  // getAllMessages();
+  fetchChatMessages(1, "initial");
   const chatBox = document.getElementById("chat-messages");
-
   const scrollBottomWrapper = document.getElementById("scroll-bottom-wrapper");
   const scrollTopWrapper = document.getElementById("load-previous");
 
